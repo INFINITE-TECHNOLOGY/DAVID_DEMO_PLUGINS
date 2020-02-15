@@ -1,0 +1,71 @@
+plugins {
+    id "groovy"
+    id "idea"
+}
+sourceCompatibility = 1.7
+group = "io.i-t"
+version = "1.0.0-SNAPSHOT"
+description = "David plugins"
+wrapper {
+    gradleVersion = "5.0"
+}
+repositories {
+    jcenter()
+    mavenLocal()
+    maven {
+        url "https://dl.bintray.com/infinite-technology/io.i-t"
+    }
+}
+sourceSets {
+    main.groovy.srcDirs = ["src/conf"]
+    test.groovy.srcDirs = ["src/test/groovy"]
+}
+
+dependencies {
+    compile "io.i-t:david-app:1.0.0"
+    compile 'io.i-t:http:1.0.0'
+    compile 'io.i-t:bobbin:3.0.0'
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.6'
+    compile group: 'com.sun.mail', name: 'javax.mail', version: '1.6.0'
+    compile group: 'com.neovisionaries', name: 'nv-i18n', version: '1.4'
+    compile group: 'com.sun.mail', name: 'javax.mail', version: '1.6.0'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.1.7.RELEASE'
+    testCompile group: 'org.testng', name: 'testng', version: '7.0.0'
+}
+task copyToLib(type: Copy) {
+    into "$buildDir/libs"
+    from(configurations.compile)
+}
+task copyApplicationProperties(type: Copy, dependsOn: [jar]) {
+    from "src/main/resources/"
+    into "build/conf"
+    include "application.properties"
+}
+task copyConf(type: Copy, dependsOn: [jar]) {
+    from "src/conf/"
+    into "build/conf"
+}
+task initKeyStore() {
+    doLast {
+        println("Creating keystore file from environment variables.")
+        String keyStore = System.getenv("keyStore")
+        if (keyStore != null) {
+            String keyStoreBase64 = System.getenv("keyStoreBase64")
+            new File(keyStore).withOutputStream {
+                it.write(Base64.decoder.decode(keyStoreBase64))
+            }
+        }
+    }
+}
+task stage(dependsOn: ['build', 'clean'])
+stage.dependsOn(copyToLib)
+stage.dependsOn(copyApplicationProperties)
+stage.dependsOn(copyConf)
+stage.dependsOn(initKeyStore)
+build.mustRunAfter clean
+
+
+configurations {
+    providedRuntime
+    compile.exclude(group: 'ch.qos.logback')
+}
