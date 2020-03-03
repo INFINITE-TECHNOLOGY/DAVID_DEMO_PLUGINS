@@ -22,7 +22,7 @@ sourceSets {
 }
 
 dependencies {
-    compile "io.i-t:david-app:1.0.0"
+    compile "io.i-t:david-app:1.0.1"
     compile 'io.i-t:http:1.0.0'
     compile 'io.i-t:bobbin:3.0.0'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.6'
